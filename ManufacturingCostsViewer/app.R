@@ -35,9 +35,9 @@ ui <- shinyUI( fluidPage(
     sidebarPanel(style="background-color: #D6EAF8;", #light blue
         h4(HTML("<u>Introduction</u>")),
         p(HTML(paste("This application uses the <em>ManufactCosts</em> dataset included in the Rdatasets AER package.",
-                     " The dataset consists of Manfacturing cost data from the year 1947-1971. More on this dataset can be found", 
+                     " The dataset consists of Manfacturing cost data from the years 1947-1971. More on this dataset can be found", 
                      " <a href='https://vincentarelbundock.github.io/Rdatasets/doc/AER/ManufactCosts.html'>here</a>."))),
-        p(HTML(paste(" You can select which data graphs to show for the manfacturing data by checking the appropriate check boxes.", 
+        p(HTML(paste(" You can select which graph data to show for the manfacturing data by checking the appropriate check boxes.", 
                      " The graphs will automatically update upon your selections."))),
         hr( style='border: 1px solid black;'),
         h4(HTML("<u>Graph Settings</u>")),
@@ -66,6 +66,8 @@ ui <- shinyUI( fluidPage(
       plotOutput("costs"),
       h3("Manufacturing Prices"),
       plotOutput("prices"),
+      h3("Cost Index"),
+      plotOutput("costindex"),
     )
   )
   
@@ -81,7 +83,8 @@ server <- shinyServer(function( input, output ) {
       manudata <- mdata %>% 
                   filter( year >= input$startyr & year <= input$endyr)
       g <- ggplot( manudata, aes(x=year))
-      g <- g + xlab(paste("Year (", input$startyr, "-", input$endyr, ")")) + ylab("Manufacturing Costs")
+      g <- g + xlab(paste("Year (", input$startyr, "-", input$endyr, ")")) + 
+               ylab("Manufacturing Costs Pecentage (%)")
       for( costtype in selected ) {
         if (costtype == "Capital") {
           g <- g + geom_line(aes(y=capitalcost, col="Capital Cost"), size=lwidth)
@@ -123,6 +126,15 @@ server <- shinyServer(function( input, output ) {
       g
     })
     
+    output$costindex <- renderPlot({
+      lwidth <- input$lwidth
+      manudata <- mdata %>% 
+        filter( year >= input$startyr & year <= input$endyr )
+      g <- ggplot( manudata, aes(x=year))
+      g <- g + xlab(paste("Year (", input$startyr, "-", input$endyr, ")")) + ylab("Cost Index")
+      g <- g + geom_line(aes(y=cost,  col="Cost Index"), size=lwidth)
+      g
+    })
     
   }
 )
